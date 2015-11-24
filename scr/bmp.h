@@ -1,137 +1,69 @@
-#ifndef BMP_H_
-#define BMP_H_
+#ifndef BMP_H
+#define BMP_H
 
-#include <vector>
+#include <iostream>
 #include <fstream>
-#include <algorithm>
-#include <memory>
+#include <vector>
+using namespace std;
 
-#include "common.h"
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+typedef unsigned int DWORD;
+typedef long LONG;
 
-enum COLOR {
-	RED,
-	GREEN,
-	BLUE
+enum BmpError {
+	BMP_ERROR_OPEN_FILE = 0,
+	BMP_ERROR_FORMAT = 1
 };
 
-enum BMPERROR {
-	BMP_OK = 0,
-	BMP_ERR_OPENING_FILE = 1,
-	BMP_ERR_CREATING_FILE = 2,
-	BMP_ERR_READING_FILE = 3,
-	BMP_ERR_WRITING_FILE = 4,
-	BMP_ERR_FILE_NOT_SUPPORTED = 5,
-	BMP_ERR_IMAGE_TOO_LARGE = 6,
-	BMP_VALUE_NOT_SET = 7
-};
-
-typedef struct tagBITMAPFILEHEAADER {
-	WORD 	bfType;				// file type "BM"
-	DWORD 	bfSize;				// file size
-	WORD 	bfReserved1;
-	WORD 	bfReserved2;
-	DWORD 	bfOffBits;			// data offset bits
+typedef struct tagBITMAPFILEHEADER {
+	DWORD	bfSize;				// file size
+	WORD	bfReserved1 = 0;
+	WORD	bfReserved2 = 0;
+	DWORD	bfOffBits = 54;		// data offset bits
 } BITMAPFILEHEADER;
 
 typedef struct tagBITMAPINFOHEADER {
-	DWORD 	biSize;				// info header size
+	DWORD 	biSize = 40;		// info header size
 	LONG 	biWidth;			// width
 	LONG 	biHeight;			// height
-	WORD 	biPlanes;			// (1)
-	DWORD 	biCompression;		// compression type (1, 4, 8, 24)
+	WORD 	biPlanes = 1;		// (1)
+	WORD	biBitCount = 24;	// Bits per pixel (1,4,8,16,24,32)
+	DWORD 	biCompression = 0;	// compression type
 	DWORD 	biSizeImage;		// image data size
-	LONG 	biXPelsPerMeter;
-	LONG 	beYPelsPerMeter;
-	DWORD 	biClrUsed;
-	DWORD 	biClrImportant;
+	LONG 	biXPelsPerMeter = 0;
+	LONG 	biYPelsPerMeter = 0;
+	DWORD 	biClrUsed = 0;
+	DWORD 	biClrImportant = 0;
 } BITMAPINFOHEADER;
 
-typedef struct tagRGBQUAD {
-	BYTE 	rgbBlue;
-	BYTE 	rgbGreen;
-	BYTE 	rgbRed;
-	BYTE 	rgbReserved;
-} RGBQUAD;
-
-typedef struct tagRGB
-{
-	BYTE r;
-	BYTE g;
+typedef struct tagBGR {
 	BYTE b;
+	BYTE g;
+	BYTE r;
+} BGR;
 
-	BYTE& operator [] (const COLOR& color) {
-		switch (color) {
-			case RED: return r;
-			case GREEN: return g;
-			case BLUE: return b;
-		}
-		// throw ERROR_OUT_OF_BOUNDS;
-	}
-
-	RGB ()
-	 : r(0), g(0), b(0) {}
-	RGB (const BYTE* rgb)
-	 : r(rgb[0]), g(rgb[1]), b(rgb[2]) {}
-	RGB (BYTE red, BYTE green, BYTE blue)
-	 : r(red), g(green), b(blue) {}
-
-} RGB;
-
-class BMPImage {
-
+class BMP {
 public:
-	BMPImage (void);
-	BMPImage (std::string);
-	BMPImage (std::string, LONG, LONG);
+	BMP () {}
+	BMP(BMP& bitmap);
+	BMP(LONG w, LONG h, vector<BGR> p);
+	
+	int openImage (char* path);
+	void readBmp (char* path);
+	void writeBmp (char* path);
 
-	~BMPImage (void);
+	LONG getWidth() { return width; }
+	LONG getHeight() { return height; }
+	vector<BGR> getPixel() { return pixels; }
 
-	/* copy constructors */
-	BMPImage (const BMPImage&);
-	BMPImage (BMPImage&);
+	int error(int opt);
+	void printBmpInfo(BITMAPFILEHEADER, BITMAPINFOHEADER);
 
-	/* assignment operators */
-	BMPImage& operator = (const BMPImage&);
-	BMPImage& operator = (BMPImage&);
-
-	int OpenImage (void);
-	int CreateImage (void);
-	int ReadImageHeader (void);
-	int ReadImagePixels (void);
-	int WriteImageHeader (void);
-	int WriteImagePixels (void);
-
-	RGB& index (LONG, LONG);
-	DWORD size (void);
-
-	/* get and set */
-	std::string file_name (void);
-	LONG width (void);
-	LONG height (void);
-	std::vector<RGB> pixels (void);
-	void set_file_name (std::string);
-	void set_width (LONG);
-	void set_height (LONG);
-	void set_pixels (std::vector<RGB>);
-
-private:
-	struct MyImage {
-		std::string 		file_name;
-		std::fstream 		working_file;
-		BITMAPFILEHEADER 	*file_header;
-		BITMAPINFOHEADER 	*info_header;
-		BYTE 				ref_count;
-		LONG 				width;
-		LONG 				height;
-		std::vector<RGB> 	pixels;
-		MyImage (WORD ref_count, LONG width, LONG height)
-		 : ref_count(ref_count), width(width), height(height) {}
-		MyImage (std::string file_name, WORD ref_count, LONG width, LONG height)
-		 : file_name(file_name), ref_count(ref_count), width(width), height(height) {}
-	};
-	std::shared_ptr<MyImage> _image;
-	// std::shared_ptr<MyImage> MyImageData (BMPErrors);
-	void MyImageCheck (void);
+protected:
+	LONG width;
+	LONG height;
+	vector<BGR> pixels;
 };
 
 #endif
