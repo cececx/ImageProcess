@@ -11,7 +11,7 @@ int main() {
 	bmp.readBmp(path);
 	cout << "  >> complete loading image" << endl;
 
-  cout << endl << "  >> Input new file path: ";
-  cin >> path;
+	cout << endl << "  >> Input new file path: ";
+	cin >> path;
 	bmp.writeBmp(path);
 }
