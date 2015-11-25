@@ -4,7 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <memory>
 using namespace std;
+
+
 
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
@@ -41,21 +44,45 @@ typedef struct tagBGR {
 	BYTE b;
 	BYTE g;
 	BYTE r;
+
+	BYTE& operator [] (const int color) {
+		switch (color)
+		{
+		case 0: return r;
+		case 1: return g;
+		case 2: return b;
+		}
+		return r;
+	}
+	tagBGR () : b(0), g(0), r(0) {}
+	tagBGR (BYTE red, BYTE green, BYTE blue) : b(blue), g(green), r(red) {}
+
 } BGR;
+
+
+
+
 
 class BMP {
 public:
 	BMP () {}
-	BMP(BMP& bitmap);
-	BMP(LONG w, LONG h, vector<BGR> p);
+	BMP(BMP&);
+	BMP(LONG, LONG, vector<BGR>);
+	BMP(LONG, LONG, vector<BYTE>, vector<BYTE>, vector<BYTE>);
+	int openImage (char*);
+	void readBmp (char*);
+	void writeBmp (char*);
 	
-	int openImage (char* path);
-	void readBmp (char* path);
-	void writeBmp (char* path);
-
 	LONG getWidth() { return width; }
 	LONG getHeight() { return height; }
 	vector<BGR> getPixel() { return pixels; }
+
+	vector<BYTE> getChannel(int);
+	vector<BYTE> getChannelR();
+	vector<BYTE> getChannelG();
+	vector<BYTE> getChannelB();
+
+
 
 	int error(int opt);
 	void printBmpInfo(BITMAPFILEHEADER, BITMAPINFOHEADER);
@@ -65,5 +92,7 @@ protected:
 	LONG height;
 	vector<BGR> pixels;
 };
+
+
 
 #endif
