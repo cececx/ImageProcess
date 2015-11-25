@@ -1,6 +1,7 @@
-#include "bmp.h"
+#include "bmpfunc.h"
 
 int main() {
+	
 	BMP bmp;
 	char path[256];
 	do {
@@ -11,7 +12,9 @@ int main() {
 	bmp.readBmp(path);
 	cout << "  >> complete loading image" << endl;
 
-	cout << endl << "  >> Input new file path: ";
-	cin >> path;
-	bmp.writeBmp(path);
+	LONG w = bmp.getWidth();
+	LONG h = bmp.getHeight();
+	BMP bmpRedChannel(w, h, bmp.getChannel(0), bmp.getChannel(0), bmp.getChannel(0));
+
+	bmpRedChannel.writeBmp("c:\\Users\\xic3\\Pictures\\test\\1_red.bmp");
 }
