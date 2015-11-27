@@ -1,7 +1,8 @@
-#include "bmpfunc.h"
+#include "seamcarv.h"
+
+#include <time.h>
 
 int main() {
-	
 	BMP bmp;
 	char path[256];
 	do {
@@ -10,11 +11,17 @@ int main() {
 	} while (!bmp.openImage(path));
 
 	bmp.readBmp(path);
-	cout << "  >> complete loading image" << endl;
-
-	LONG w = bmp.getWidth();
-	LONG h = bmp.getHeight();
-	BMP bmpRedChannel(w, h, bmp.getChannel(0), bmp.getChannel(0), bmp.getChannel(0));
-
-	bmpRedChannel.writeBmp("c:\\Users\\xic3\\Pictures\\test\\1_red.bmp");
+	cout << "  >> image loaded" << endl;
+	
+	SeamCarver seamcarver(bmp);
+	cout << "  >> seamcarver created" << endl << endl;
+	cout << "  >> processing..." << endl << endl;
+	clock_t start = clock();
+	for (int i = 0; i < 50; ++i) {
+		vector<int> seam = seamcarver.findVerticalSeam();
+		seamcarver.removeVerticalSeam(seam);
+	}
+	clock_t end = clock();
+	cout << "  >> 50 seams: runtime " << (end - start) << "ms" << endl;
+	seamcarver.output("d:\\resize.bmp");
 }
